@@ -27,7 +27,7 @@ public class TaskApiController {
     private final TaskService taskService;
 
     @Operation(summary = "Pobierz listę zadań z filtrami i paginacją")
-    @GetMapping
+    @GetMapping("/")
     public ResponseEntity<Page<TaskDto>> getTasks(
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) Long categoryId,
@@ -36,28 +36,29 @@ public class TaskApiController {
             @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "created_at,desc") String sort) {  // ← ZMIANA: created_at
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
 
-        if (page < 0) page = 0;
-        if (size <= 0 || size > 100) size = 10;
+        page = Math.max(0, page);
+        size = size <= 0 || size > 100 ? 10 : size;
 
-        String[] sortParams = sort.split(",");
-        String sortBy = sortParams[0];
-        Sort.Direction direction = sortParams.length > 1
-                ? Sort.Direction.fromString(sortParams[1].toUpperCase())
+        String[] sortParts = sort.split(",");
+        String property = sortParts[0];
+        Sort.Direction direction = sortParts.length > 1
+                ? Sort.Direction.fromString(sortParts[1].toUpperCase())
                 : Sort.Direction.DESC;
 
-        // DOPUSZCZALNE POLA DO SORTOWANIA
-        String[] allowedSortFields = {"id", "title", "status", "due_date", "created_at", "updated_at"};
-        boolean isValidSort = java.util.Arrays.stream(allowedSortFields).anyMatch(sortBy::equals);
-        if (!isValidSort) {
-            sortBy = "created_at"; // fallback
-        }
+        String javaField = switch (property) {
+            case "due_date", "dueDate"         -> "dueDate";
+            case "created_at", "createdAt"     -> "createdAt";
+            case "updated_at", "updatedAt"     -> "updatedAt";
+            case "id", "title", "status"       -> property;
+            default                            -> "createdAt";
+        };
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, javaField));
 
-        Page<TaskDto> tasks = taskService.getAllTasks(status, categoryId, dueDateBefore, dueDateAfter, title, pageable);
-        return ResponseEntity.ok(tasks);
+        Page<TaskDto> result = taskService.getAllTasks(status, categoryId, dueDateBefore, dueDateAfter, title, pageable);
+        return ResponseEntity.ok(result);
     }
     @Operation(summary = "Pobierz zadanie po ID")
     @GetMapping("/{id}")

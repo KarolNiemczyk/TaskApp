@@ -32,13 +32,13 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     // Pełne wyszukiwanie z filtrami
     @Query("""
-        SELECT t FROM Task t 
-        WHERE (:status IS NULL OR t.status = :status)
-          AND (:categoryId IS NULL OR t.category.id = :categoryId)
-          AND (:dueDateBefore IS NULL OR t.dueDate < :dueDateBefore)
-          AND (:dueDateAfter IS NULL OR t.dueDate > :dueDateAfter)
-          AND (:title IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :title, '%')))
-        """)
+    SELECT t FROM Task t
+    WHERE (:status IS NULL OR t.status = :status)
+      AND (:categoryId IS NULL OR t.category.id = :categoryId)
+      AND (:dueDateBefore IS NULL OR t.dueDate < :dueDateBefore)
+      AND (:dueDateAfter IS NULL OR t.dueDate > :dueDateAfter)
+      AND (COALESCE(:title, '') = '' OR LOWER(t.title) LIKE LOWER(CONCAT('%', :title, '%')))
+    """)
     Page<Task> searchTasks(
             @Param("status") TaskStatus status,
             @Param("categoryId") Long categoryId,

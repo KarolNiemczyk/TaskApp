@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{fragments/header}">
+    <title>Lista zadań</title>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Zadania (<span th:text="${tasks.totalElements}">0</span>)</h2>
+        <a th:href="@{/tasks/new}" class="btn btn-success btn-lg">+ Nowe zadanie</a>
+    </div>
+
+    <div th:if="${tasks.content.isEmpty()}" class="text-center py-5">
+        <h4 class="text-muted">Brak zadań – dodaj pierwsze!</h4>
+        <a th:href="@{/tasks/new}" class="btn btn-outline-primary btn-lg">Dodaj zadanie</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" th:unless="${tasks.content.isEmpty()}">
+        <div class="col" th:each="t : ${tasks.content}">
+            <div class="card h-100 shadow card-hover"
+                 th:classappend="${t.status == 'DONE' ? 'status-done' : (t.status == 'IN_PROGRESS' ? 'status-in-progress' : '')}">
+
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0" th:text="${t.title}">Tytuł</h5>
+
+                        <!-- Badge z kolorem w zależności od statusu -->
+                        <span class="badge fs-6"
+                              th:class="${t.status == 'DONE' ? 'bg-success' : (t.status == 'IN_PROGRESS' ? 'bg-warning text-dark' : 'bg-secondary')}"
+                              th:text="${t.status}">TODO</span>
+                    </div>
+
+                    <p class="text-muted" th:text="${t.description} ?: 'Brak opisu'">Opis</p>
+
+                    <div class="small mt-3">
+                        <div th:if="${t.categoryName}" class="text-primary mb-1">
+                            Kategoria: <strong th:text="${t.categoryName}">Praca</strong>
+                        </div>
+                        <div th:if="${t.dueDate}" class="text-danger">
+                            Termin: <span th:text="${#temporals.format(t.dueDate, 'dd.MM.yyyy')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-transparent">
+                    <div class="btn-group w-100">
+                        <a th:href="@{'/tasks/' + ${t.id}}" class="btn btn-outline-primary">Edytuj</a>
+                        <form th:action="@{'/tasks/' + ${t.id}}" method="post" class="d-inline">
+                            <input type="hidden" name="_method" value="DELETE"/>
+                            <button type="submit" class="btn btn-outline-danger"
+                                    onclick="return confirm('Na pewno usunąć?')">Usuń</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:insert="~{fragments/footer}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

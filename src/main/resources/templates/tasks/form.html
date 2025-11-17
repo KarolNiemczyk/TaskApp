@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="~{fragments/header}">
+    <title th:text="${isEdit} ? 'Edytuj zadanie' : 'Nowe zadanie'">Nowe zadanie</title>
+</head>
+<body>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0" th:text="${isEdit} ? 'Edytuj zadanie' : 'Nowe zadanie'"></h3>
+                </div>
+                <div class="card-body p-5">
+                    <form th:action="@{${isEdit} ? '/tasks/' + ${taskId} : '/tasks'}"
+                          th:object="${task}" method="post">
+                        <input type="hidden" name="_method" th:if="${isEdit}" value="PUT"/>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Tytuł *</label>
+                            <input type="text" class="form-control form-control-lg" th:field="*{title}" required/>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Opis</label>
+                            <textarea class="form-control" rows="4" th:field="*{description}"></textarea>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Status</label>
+                                <select class="form-select form-select-lg" th:field="*{status}">
+                                    <option value="TODO">Do zrobienia</option>
+                                    <option value="IN_PROGRESS">W trakcie</option>
+                                    <option value="DONE">Zrobione</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Termin</label>
+                                <input type="date" class="form-control form-control-lg" th:field="*{dueDate}"/>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">Kategoria</label>
+                            <select class="form-select form-select-lg" th:field="*{categoryId}">
+                                <option value="">-- bez kategorii --</option>
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"></option>
+                            </select>
+                        </div>
+
+                        <div class="text-end">
+                            <a th:href="@{/tasks}" class="btn btn-secondary btn-lg">Anuluj</a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">Zapisz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:insert="~{fragments/footer}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
